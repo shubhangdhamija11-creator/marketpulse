@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MarketPulse India — NSE/BSE Stock Screener & Intelligence</title>
+  <meta name="description" content="Free Indian stock screener. Identify Bull Cartel, Bear Cartel, breakout stocks on NSE and BSE using AI-powered technical analysis."/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #04060f;
+      --surface:   #080d1a;
+      --card:      #0b1120;
+      --border:    #131d30;
+      --muted:     #1e2d45;
+      --text:      #e2e8f0;
+      --sub:       #64748b;
+      --accent:    #38bdf8;
+      --green:     #34d399;
+      --red:       #f87171;
+      --yellow:    #fbbf24;
+      --purple:    #a78bfa;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(4,6,15,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 5%;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px;
+    }
+    .nav-logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 800; font-size: 18px;
+      color: var(--text);
+      display: flex; align-items: center; gap: 8px;
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 28px; list-style: none; }
+    .nav-links a { color: var(--sub); font-size: 14px; text-decoration: none; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      background: var(--accent); color: #000;
+      border: none; border-radius: 8px;
+      padding: 8px 18px; font-size: 13px; font-weight: 700;
+      cursor: pointer; text-decoration: none;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 100px 5% 60px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(56,189,248,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56,189,248,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black, transparent);
+    }
+    .hero-glow {
+      position: absolute;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(56,189,248,0.08) 0%, transparent 70%);
+      top: 50%; left: 50%; transform: translate(-50%,-50%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(56,189,248,0.08);
+      border: 1px solid rgba(56,189,248,0.2);
+      border-radius: 20px; padding: 5px 14px;
+      font-size: 12px; font-weight: 600;
+      color: var(--accent); letter-spacing: 0.5px;
+      margin-bottom: 28px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .hero h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(36px, 6vw, 72px);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -2px;
+      margin-bottom: 24px;
+      max-width: 800px;
+    }
+    .hero h1 em { font-style: normal; color: var(--accent); }
+    .hero p {
+      font-size: clamp(15px, 2vw, 18px);
+      color: var(--sub);
+      max-width: 520px;
+      margin-bottom: 40px;
+    }
+    .hero-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .btn-primary {
+      background: var(--accent); color: #000;
+      border: none; border-radius: 10px;
+      padding: 14px 28px; font-size: 15px; font-weight: 700;
+      cursor: pointer; font-family: 'Space Grotesk', sans-serif;
+      text-decoration: none; display: inline-block;
+      transition: opacity 0.2s;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-ghost {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 14px 28px; font-size: 15px; font-weight: 600;
+      cursor: pointer; font-family: 'Space Grotesk', sans-serif;
+      text-decoration: none; display: inline-block;
+      transition: border-color 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--sub); }
+
+    /* TICKER TAPE */
+    .ticker-wrap {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden; padding: 10px 0;
+      margin-bottom: 0;
+    }
+    .ticker-inner {
+      display: flex; gap: 48px;
+      animation: scroll 30s linear infinite;
+      white-space: nowrap; width: max-content;
+    }
+    .ticker-item {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; display: flex; align-items: center; gap: 8px;
+    }
+    .ticker-name { color: var(--sub); }
+    .ticker-up { color: var(--green); }
+    .ticker-down { color: var(--red); }
+    @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    /* SIGNALS SECTION */
+    .section { padding: 80px 5%; max-width: 1200px; margin: 0 auto; }
+    .section-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; color: var(--accent);
+      letter-spacing: 2px; text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .section h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(26px, 4vw, 42px);
+      font-weight: 800; letter-spacing: -1px;
+      margin-bottom: 16px;
+    }
+    .section-sub { color: var(--sub); font-size: 16px; max-width: 520px; margin-bottom: 48px; }
+
+    /* SIGNAL CARDS */
+    .signals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px; margin-bottom: 48px;
+    }
+    .signal-card {
+      border-radius: 12px; padding: 20px 18px;
+      border: 1px solid; position: relative; overflow: hidden;
+    }
+    .signal-card::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+    }
+    .signal-bull-cartel { background: #031a0a; border-color: #16a34a; }
+    .signal-bull-cartel::before { background: #16a34a; }
+    .signal-bullish { background: #041510; border-color: #22c55e; }
+    .signal-bullish::before { background: #22c55e; }
+    .signal-neutral { background: #0f0f0f; border-color: #525252; }
+    .signal-neutral::before { background: #525252; }
+    .signal-bearish { background: #150404; border-color: #ef4444; }
+    .signal-bearish::before { background: #ef4444; }
+    .signal-bear-cartel { background: #1a0303; border-color: #dc2626; }
+    .signal-bear-cartel::before { background: #dc2626; }
+
+    .signal-icon { font-size: 28px; margin-bottom: 10px; }
+    .signal-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px; font-weight: 700;
+      margin-bottom: 6px; letter-spacing: 0.5px;
+    }
+    .signal-desc { font-size: 12px; color: var(--sub); line-height: 1.5; }
+
+    /* FEATURES */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px; padding: 28px 24px;
+      transition: border-color 0.2s;
+    }
+    .feature-card:hover { border-color: var(--muted); }
+    .feature-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      background: rgba(56,189,248,0.08);
+      border: 1px solid rgba(56,189,248,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; margin-bottom: 16px;
+    }
+    .feature-card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px; font-weight: 700; margin-bottom: 8px;
+    }
+    .feature-card p { font-size: 14px; color: var(--sub); line-height: 1.6; }
+
+    /* SCREENER PREVIEW */
+    .screener-preview {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+      margin: 48px 0;
+    }
+    .preview-bar {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .preview-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .preview-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; color: var(--sub); margin-left: 8px;
+    }
+    .preview-body { padding: 24px; }
+    .preview-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; border-radius: 8px;
+      margin-bottom: 8px; border: 1px solid;
+    }
+    .preview-ticker {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px; font-weight: 600;
+    }
+    .preview-badge {
+      font-size: 10px; font-weight: 700;
+      padding: 3px 8px; border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+    .preview-price { font-size: 13px; font-family: 'JetBrains Mono', monospace; }
+
+    /* AFFILIATE SECTION */
+    .affiliate-section {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 60px 5%;
+    }
+    .affiliate-inner { max-width: 1200px; margin: 0 auto; }
+    .broker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px; margin-top: 36px;
+    }
+    .broker-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+    .broker-card:hover { border-color: var(--accent); }
+    .broker-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700; font-size: 16px; margin-bottom: 4px;
+    }
+    .broker-earn { color: var(--green); font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+    .broker-desc { color: var(--sub); font-size: 12px; margin-bottom: 16px; line-height: 1.5; }
+    .broker-btn {
+      display: block; background: var(--accent); color: #000;
+      border: none; border-radius: 8px; padding: 8px 16px;
+      font-size: 12px; font-weight: 700; cursor: pointer;
+      text-decoration: none; font-family: 'Space Grotesk', sans-serif;
+      transition: opacity 0.2s;
+    }
+    .broker-btn:hover { opacity: 0.85; }
+
+    /* HOW IT WORKS */
+    .steps { display: flex; flex-direction: column; gap: 0; max-width: 640px; }
+    .step { display: flex; gap: 20px; padding-bottom: 36px; position: relative; }
+    .step:not(:last-child)::before {
+      content: ''; position: absolute;
+      left: 19px; top: 40px; bottom: 0;
+      width: 1px; background: var(--border);
+    }
+    .step-num {
+      width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(56,189,248,0.1);
+      border: 1px solid rgba(56,189,248,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px; font-weight: 600; color: var(--accent);
+    }
+    .step-content h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px; font-weight: 700; margin-bottom: 6px; margin-top: 8px;
+    }
+    .step-content p { color: var(--sub); font-size: 14px; }
+
+    /* FOOTER */
+    footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 40px 5%;
+      text-align: center;
+    }
+    .footer-logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 800; font-size: 20px;
+      margin-bottom: 12px;
+    }
+    .footer-logo span { color: var(--accent); }
+    .footer-links { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+    .footer-links a { color: var(--sub); font-size: 13px; text-decoration: none; }
+    .footer-links a:hover { color: var(--text); }
+    .footer-disclaimer {
+      color: var(--muted); font-size: 11px; max-width: 600px;
+      margin: 0 auto; line-height: 1.6;
+    }
+
+    /* STATS BAR */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1px; background: var(--border);
+      border: 1px solid var(--border); border-radius: 14px;
+      overflow: hidden; margin-bottom: 64px;
+    }
+    .stat-item {
+      background: var(--card);
+      padding: 24px 20px; text-align: center;
+    }
+    .stat-num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 28px; font-weight: 800;
+      color: var(--accent); margin-bottom: 4px;
+    }
+    .stat-label { font-size: 12px; color: var(--sub); }
+
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .hero h1 { letter-spacing: -1px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">Market<span>Pulse</span></a>
+  <ul class="nav-links">
+    <li><a href="#screener">Screener</a></li>
+    <li><a href="#signals">Signals</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="screener.html">Open Screener</a></li>
+  </ul>
+  <a href="screener.html" class="nav-cta">Launch Screener →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-tag">🇮🇳 NSE · BSE · REAL-TIME SIGNALS</div>
+  <h1>Know if the <em>Bulls</em> or<br/>Bears control a stock</h1>
+  <p>AI-powered screener that classifies every NSE/BSE stock into Bull Cartel, Bearish, Neutral and more — in seconds.</p>
+  <div class="hero-btns">
+    <a href="screener.html" class="btn-primary">Screen Stocks Free →</a>
+    <a href="#signals" class="btn-ghost">See how signals work</a>
+  </div>
+</section>
+
+<!-- TICKER TAPE -->
+<div class="ticker-wrap">
+  <div class="ticker-inner">
+    <div class="ticker-item"><span class="ticker-name">RELIANCE</span><span class="ticker-up">▲ +2.4%</span></div>
+    <div class="ticker-item"><span class="ticker-name">TCS</span><span class="ticker-up">▲ +1.1%</span></div>
+    <div class="ticker-item"><span class="ticker-name">HDFCBANK</span><span class="ticker-down">▼ -0.8%</span></div>
+    <div class="ticker-item"><span class="ticker-name">INFY</span><span class="ticker-up">▲ +0.6%</span></div>
+    <div class="ticker-item"><span class="ticker-name">ICICIBANK</span><span class="ticker-up">▲ +1.9%</span></div>
+    <div class="ticker-item"><span class="ticker-name">SBIN</span><span class="ticker-down">▼ -1.2%</span></div>
+    <div class="ticker-item"><span class="ticker-name">BHARTIARTL</span><span class="ticker-up">▲ +3.1%</span></div>
+    <div class="ticker-item"><span class="ticker-name">WIPRO</span><span class="ticker-down">▼ -0.4%</span></div>
+    <div class="ticker-item"><span class="ticker-name">TECHM</span><span class="ticker-up">▲ +2.7%</span></div>
+    <div class="ticker-item"><span class="ticker-name">NALCO</span><span class="ticker-up">▲ +4.2%</span></div>
+    <div class="ticker-item"><span class="ticker-name">TATAPOWER</span><span class="ticker-up">▲ +1.8%</span></div>
+    <div class="ticker-item"><span class="ticker-name">JSWSTEEL</span><span class="ticker-down">▼ -0.9%</span></div>
+    <!-- duplicate for seamless loop -->
+    <div class="ticker-item"><span class="ticker-name">RELIANCE</span><span class="ticker-up">▲ +2.4%</span></div>
+    <div class="ticker-item"><span class="ticker-name">TCS</span><span class="ticker-up">▲ +1.1%</span></div>
+    <div class="ticker-item"><span class="ticker-name">HDFCBANK</span><span class="ticker-down">▼ -0.8%</span></div>
+    <div class="ticker-item"><span class="ticker-name">INFY</span><span class="ticker-up">▲ +0.6%</span></div>
+    <div class="ticker-item"><span class="ticker-name">ICICIBANK</span><span class="ticker-up">▲ +1.9%</span></div>
+    <div class="ticker-item"><span class="ticker-name">SBIN</span><span class="ticker-down">▼ -1.2%</span></div>
+    <div class="ticker-item"><span class="ticker-name">BHARTIARTL</span><span class="ticker-up">▲ +3.1%</span></div>
+    <div class="ticker-item"><span class="ticker-name">WIPRO</span><span class="ticker-down">▼ -0.4%</span></div>
+    <div class="ticker-item"><span class="ticker-name">TECHM</span><span class="ticker-up">▲ +2.7%</span></div>
+    <div class="ticker-item"><span class="ticker-name">NALCO</span><span class="ticker-up">▲ +4.2%</span></div>
+    <div class="ticker-item"><span class="ticker-name">TATAPOWER</span><span class="ticker-up">▲ +1.8%</span></div>
+    <div class="ticker-item"><span class="ticker-name">JSWSTEEL</span><span class="ticker-down">▼ -0.9%</span></div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div style="padding: 60px 5% 0; max-width:1200px; margin:0 auto;">
+  <div class="stats-bar">
+    <div class="stat-item"><div class="stat-num">5</div><div class="stat-label">Signal Categories</div></div>
+    <div class="stat-item"><div class="stat-num">NSE+BSE</div><div class="stat-label">Market Coverage</div></div>
+    <div class="stat-item"><div class="stat-num">AI</div><div class="stat-label">Powered Analysis</div></div>
+    <div class="stat-item"><div class="stat-num">₹0</div><div class="stat-label">Cost to Use</div></div>
+  </div>
+</div>
+
+<!-- SIGNALS -->
+<section class="section" id="signals">
+  <div class="section-tag">// signal system</div>
+  <h2>5 signals that tell<br/>the full story</h2>
+  <p class="section-sub">Every stock is classified into one of five categories based on price action, volume, and institutional movement.</p>
+
+  <div class="signals-grid">
+    <div class="signal-card signal-bull-cartel">
+      <div class="signal-icon">🐂</div>
+      <div class="signal-name" style="color:#4ade80">BULL CARTEL</div>
+      <div class="signal-desc">Strong institutional accumulation. Breakout with heavy volume. Smart money is loading up.</div>
+    </div>
+    <div class="signal-card signal-bullish">
+      <div class="signal-icon">📈</div>
+      <div class="signal-name" style="color:#86efac">BULLISH</div>
+      <div class="signal-desc">Positive momentum. Stock trading above key moving averages. Moderate buying pressure.</div>
+    </div>
+    <div class="signal-card signal-neutral">
+      <div class="signal-icon">⚖️</div>
+      <div class="signal-name" style="color:#d6d3d1">NEUTRAL</div>
+      <div class="signal-desc">Sideways price action. Consolidating. No clear directional signal yet. Wait and watch.</div>
+    </div>
+    <div class="signal-card signal-bearish">
+      <div class="signal-icon">📉</div>
+      <div class="signal-name" style="color:#fca5a5">BEARISH</div>
+      <div class="signal-desc">Below key moving averages. Selling pressure building. Downtrend forming. Caution advised.</div>
+    </div>
+    <div class="signal-card signal-bear-cartel">
+      <div class="signal-icon">🐻</div>
+      <div class="signal-name" style="color:#f87171">BEAR CARTEL</div>
+      <div class="signal-desc">Heavy institutional distribution. Breakdown confirmed. Smart money is exiting aggressively.</div>
+    </div>
+  </div>
+
+  <!-- SCREENER PREVIEW -->
+  <div class="screener-preview" id="screener">
+    <div class="preview-bar">
+      <div class="preview-dot" style="background:#ef4444"></div>
+      <div class="preview-dot" style="background:#fbbf24"></div>
+      <div class="preview-dot" style="background:#34d399"></div>
+      <span class="preview-title">marketpulse.in — screener</span>
+    </div>
+    <div class="preview-body">
+      <div class="preview-row" style="background:#031a0a; border-color:#16a34a;">
+        <span class="preview-ticker" style="color:#4ade80">RELIANCE</span>
+        <span class="preview-badge" style="background:#14532d; color:#4ade80">🐂 BULL CARTEL</span>
+        <span class="preview-price" style="color:#4ade80">₹2,845 ▲2.4%</span>
+      </div>
+      <div class="preview-row" style="background:#031a0a; border-color:#22c55e;">
+        <span class="preview-ticker" style="color:#86efac">BHARTIARTL</span>
+        <span class="preview-badge" style="background:#166534; color:#86efac">📈 BULLISH</span>
+        <span class="preview-price" style="color:#86efac">₹1,420 ▲3.1%</span>
+      </div>
+      <div class="preview-row" style="background:#0f0f0f; border-color:#525252;">
+        <span class="preview-ticker" style="color:#d6d3d1">WIPRO</span>
+        <span class="preview-badge" style="background:#292524; color:#d6d3d1">⚖️ NEUTRAL</span>
+        <span class="preview-price" style="color:#d6d3d1">₹468 ▼0.4%</span>
+      </div>
+      <div class="preview-row" style="background:#150404; border-color:#ef4444;">
+        <span class="preview-ticker" style="color:#fca5a5">HDFCBANK</span>
+        <span class="preview-badge" style="background:#7f1d1d; color:#fca5a5">📉 BEARISH</span>
+        <span class="preview-price" style="color:#fca5a5">₹1,680 ▼0.8%</span>
+      </div>
+      <div style="text-align:center; margin-top:20px;">
+        <a href="screener.html" class="btn-primary">Open Full Screener →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section">
+  <div class="section-tag">// features</div>
+  <h2>Everything you need<br/>to read the market</h2>
+  <p class="section-sub">Built for Indian traders who want clarity, not noise.</p>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🎯</div>
+      <h3>Bull & Bear Cartel Detection</h3>
+      <p>Identifies when institutional money is aggressively accumulating or distributing — before the crowd notices.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>Technical Snapshot</h3>
+      <p>RSI, MACD, volume analysis, support and resistance levels — all in one clean card per stock.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>Screen Any NSE/BSE Stock</h3>
+      <p>Enter any ticker or choose from pre-built watchlists like Nifty 50, Midcap Movers, Banking Pack.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔍</div>
+      <h3>Filter by Signal</h3>
+      <p>Instantly filter your results to show only Bull Cartel stocks or only Bearish setups — your choice.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🧠</div>
+      <h3>AI-Powered Reasoning</h3>
+      <p>Each signal comes with a plain-English explanation of why the stock is classified that way.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💸</div>
+      <h3>100% Free</h3>
+      <p>No subscription, no signup required. Open the screener and start analyzing stocks immediately.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+  <div class="section-tag">// how it works</div>
+  <h2>Simple as 3 steps</h2>
+  <p class="section-sub" style="margin-bottom:36px;">No learning curve. Just open and screen.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <h3>Enter your stocks</h3>
+        <p>Type any NSE tickers like RELIANCE, TCS, INFY or pick a ready-made watchlist.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <h3>AI analyzes each stock</h3>
+        <p>Our AI checks RSI, MACD, volume, moving averages and institutional activity for every ticker.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <h3>Get your signal</h3>
+        <p>Stocks are sorted into Bull Cartel, Bullish, Neutral, Bearish or Bear Cartel with full reasoning.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BROKER AFFILIATES -->
+<div class="affiliate-section">
+  <div class="affiliate-inner">
+    <div class="section-tag">// open a demat account</div>
+    <h2 style="font-family:'Space Grotesk',sans-serif;font-size:clamp(22px,3vw,36px);font-weight:800;letter-spacing:-1px;margin-bottom:8px;">Start trading with India's best brokers</h2>
+    <p style="color:var(--sub);font-size:15px;">Zero brokerage on delivery. Open free in 10 minutes.</p>
+    <div class="broker-grid">
+      <div class="broker-card">
+        <div class="broker-name">Zerodha</div>
+        <div class="broker-earn">₹0 Brokerage on Delivery</div>
+        <div class="broker-desc">India's largest broker. Kite platform is the best for charting and trading.</div>
+        <a href="https://zerodha.com" target="_blank" class="broker-btn">Open Free Account →</a>
+      </div>
+      <div class="broker-card">
+        <div class="broker-name">Upstox</div>
+        <div class="broker-earn">₹0 Brokerage on Delivery</div>
+        <div class="broker-desc">Fast platform, great mobile app. Backed by Tiger Global and Ratan Tata.</div>
+        <a href="https://upstox.com" target="_blank" class="broker-btn">Open Free Account →</a>
+      </div>
+      <div class="broker-card">
+        <div class="broker-name">Groww</div>
+        <div class="broker-earn">₹0 Brokerage on Delivery</div>
+        <div class="broker-desc">Simplest app for beginners. Stocks, mutual funds, and FD all in one place.</div>
+        <a href="https://groww.in" target="_blank" class="broker-btn">Open Free Account →</a>
+      </div>
+      <div class="broker-card">
+        <div class="broker-name">Angel One</div>
+        <div class="broker-earn">₹0 Brokerage on Delivery</div>
+        <div class="broker-desc">AI-powered research reports. Good for investors who want guidance.</div>
+        <a href="https://angelone.in" target="_blank" class="broker-btn">Open Free Account →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA BANNER -->
+<section class="section" style="text-align:center; padding-top:80px; padding-bottom:80px;">
+  <div class="section-tag" style="justify-content:center; display:flex;">// start now</div>
+  <h2 style="margin-bottom:16px;">Ready to screen the market?</h2>
+  <p style="color:var(--sub); max-width:400px; margin:0 auto 32px;">Free. No signup. Works on any device. Screen Nifty 50 stocks in under 60 seconds.</p>
+  <a href="screener.html" class="btn-primary" style="font-size:16px; padding:16px 36px;">Open Stock Screener →</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Market<span>Pulse</span></div>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="screener.html">Screener</a>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="terms.html">Terms of Use</a>
+    <a href="disclaimer.html">Disclaimer</a>
+  </div>
+  <div class="footer-disclaimer">
+    ⚠ MarketPulse is for educational and informational purposes only. We are not SEBI registered. Nothing on this website constitutes investment advice or a recommendation to buy or sell any security. Always consult a SEBI-registered financial advisor before investing. Trading in stocks involves risk of loss.
+  </div>
+  <div style="color:var(--muted);font-size:11px;margin-top:16px;">© 2026 MarketPulse India. All rights reserved.</div>
+</footer>
+
+</body>
+</html>

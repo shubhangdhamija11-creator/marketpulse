@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Stock Analyst — Deep Dive Research</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#03050e;--surface:#070b17;--card:#0a0f1e;
+  --border:#111827;--muted:#1a2540;
+  --text:#e8edf5;--sub:#4b6080;--dim:#1e3050;
+  --accent:#6366f1;--accent2:#818cf8;
+  --green:#22c55e;--green-bg:#052e16;--green-border:#16a34a;
+  --red:#ef4444;--red-bg:#2d0505;--red-border:#b91c1c;
+  --yellow:#eab308;--yellow-bg:#1c1500;--yellow-border:#854d0e;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;display:flex;flex-direction:column}
+
+/* HEADER */
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:14px}
+.logo-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.logo-text{font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:18px}
+.logo-text span{color:var(--accent2)}
+.logo-sub{font-size:11px;color:var(--sub);margin-top:1px}
+.edu-badge{margin-left:auto;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);border-radius:20px;padding:5px 12px;font-size:11px;color:var(--accent2);font-family:'JetBrains Mono',monospace}
+
+/* SEARCH */
+.search-wrap{padding:32px 24px 0;max-width:860px;margin:0 auto;width:100%}
+.search-label{font-size:12px;color:var(--sub);letter-spacing:1px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:10px}
+.search-row{display:flex;gap:10px}
+.search-input{flex:1;background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:14px 18px;font-size:16px;color:var(--text);outline:none;font-family:'Space Grotesk',sans-serif;transition:border-color 0.2s}
+.search-input:focus{border-color:var(--accent)}
+.search-input::placeholder{color:var(--sub)}
+.search-btn{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;border-radius:12px;padding:14px 24px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;white-space:nowrap;transition:opacity 0.2s;display:flex;align-items:center;gap:8px}
+.search-btn:disabled{background:var(--muted);color:var(--sub);cursor:not-allowed}
+.search-btn:not(:disabled):hover{opacity:0.85}
+.quick-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.quick-tag{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:5px 13px;font-size:12px;color:var(--sub);cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all 0.15s}
+.quick-tag:hover{border-color:var(--accent);color:var(--accent2)}
+
+/* MAIN CONTENT */
+.main{flex:1;padding:28px 24px 48px;max-width:860px;margin:0 auto;width:100%}
+
+/* LOADING */
+.loading{text-align:center;padding:80px 0}
+.loading-spinner{display:flex;justify-content:center;gap:8px;margin-bottom:20px}
+.spin-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);animation:sp 1.2s infinite}
+.spin-dot:nth-child(2){animation-delay:.2s}
+.spin-dot:nth-child(3){animation-delay:.4s}
+@keyframes sp{0%,80%,100%{transform:scale(1);opacity:.8}40%{transform:scale(1.4);opacity:1}}
+.loading-text{color:var(--sub);font-size:14px}
+.loading-stock{color:var(--accent2);font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;margin-bottom:8px}
+
+/* SIGNAL BANNER */
+.signal-banner{border-radius:16px;padding:24px 28px;margin-bottom:20px;border:1px solid;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.signal-icon-big{font-size:48px;line-height:1}
+.signal-text-wrap{flex:1}
+.signal-action{font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:800;letter-spacing:-1px;margin-bottom:4px}
+.signal-tagline{font-size:14px;opacity:0.8;line-height:1.5}
+.signal-confidence{margin-left:auto;text-align:center}
+.conf-ring{width:70px;height:70px;border-radius:50%;border:3px solid;display:flex;align-items:center;justify-content:center;flex-direction:column}
+.conf-pct{font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:18px}
+.conf-label{font-size:9px;letter-spacing:1px;text-transform:uppercase;opacity:0.7}
+
+.buy-banner{background:var(--green-bg);border-color:var(--green-border)}
+.buy-banner .signal-action{color:var(--green)}
+.buy-banner .conf-ring{border-color:var(--green)}
+.buy-banner .conf-pct{color:var(--green)}
+
+.sell-banner{background:var(--red-bg);border-color:var(--red-border)}
+.sell-banner .signal-action{color:var(--red)}
+.sell-banner .conf-ring{border-color:var(--red)}
+.sell-banner .conf-pct{color:var(--red)}
+
+.hold-banner{background:var(--yellow-bg);border-color:var(--yellow-border)}
+.hold-banner .signal-action{color:var(--yellow)}
+.hold-banner .conf-ring{border-color:var(--yellow)}
+.hold-banner .conf-pct{color:var(--yellow)}
+
+/* STOCK HEADER */
+.stock-header{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.stock-name-wrap .ticker{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:800}
+.stock-name-wrap .full-name{color:var(--sub);font-size:14px;margin-top:2px}
+.stock-name-wrap .sector-tag{display:inline-block;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:20px;padding:2px 10px;font-size:11px;color:var(--accent2);margin-top:6px;font-family:'JetBrains Mono',monospace}
+.stock-price-wrap{text-align:right}
+.price-val{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:600}
+.price-change{font-size:15px;font-weight:600;font-family:'JetBrains Mono',monospace;margin-top:2px}
+.price-up{color:var(--green)}
+.price-down{color:var(--red)}
+
+/* GRID CARDS */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+.info-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
+.info-card-title{font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;font-family:'JetBrains Mono',monospace;margin-bottom:14px}
+
+/* KEY METRICS */
+.metric-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.metric-row:last-child{border-bottom:none}
+.metric-key{font-size:13px;color:var(--sub)}
+.metric-val{font-size:13px;font-weight:600;font-family:'JetBrains Mono',monospace}
+
+/* TECHNICALS */
+.tech-item{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}
+.tech-item:last-child{border-bottom:none}
+.tech-name{font-size:13px;color:var(--sub)}
+.tech-signal{font-size:12px;font-weight:700;padding:3px 9px;border-radius:20px}
+.sig-bullish{background:rgba(34,197,94,0.1);color:var(--green)}
+.sig-bearish{background:rgba(239,68,68,0.1);color:var(--red)}
+.sig-neutral{background:rgba(234,179,8,0.1);color:var(--yellow)}
+
+/* PROS CONS */
+.pros-cons{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.pros-card{background:#031a0a;border:1px solid #16a34a;border-radius:12px;padding:18px 20px}
+.cons-card{background:#1a0505;border:1px solid #b91c1c;border-radius:12px;padding:18px 20px}
+.pc-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.pros-card .pc-title{color:var(--green)}
+.cons-card .pc-title{color:var(--red)}
+.pc-item{display:flex;gap:8px;margin-bottom:8px;font-size:13px;line-height:1.5;color:#cbd5e1}
+.pc-item:last-child{margin-bottom:0}
+.pc-dot{font-size:12px;flex-shrink:0;margin-top:1px}
+.pros-card .pc-dot{color:var(--green)}
+.cons-card .pc-dot{color:var(--red)}
+
+/* SUMMARY */
+.summary-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:14px}
+.summary-title{font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;font-family:'JetBrains Mono',monospace;margin-bottom:12px}
+.summary-text{font-size:14px;color:#94a3b8;line-height:1.8}
+
+/* SUPPORT RESISTANCE */
+.sr-row{display:flex;gap:10px;margin-bottom:14px}
+.sr-card{flex:1;border-radius:12px;padding:16px 18px;border:1px solid}
+.sr-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;font-family:'JetBrains Mono',monospace;margin-bottom:6px}
+.sr-val{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700}
+.sr-support{background:#031a0a;border-color:#16a34a}
+.sr-support .sr-label{color:#4ade80}
+.sr-support .sr-val{color:#4ade80}
+.sr-resistance{background:#1a0505;border-color:#b91c1c}
+.sr-resistance .sr-label{color:#f87171}
+.sr-resistance .sr-val{color:#f87171}
+.sr-target{background:#1c1500;border-color:#854d0e}
+.sr-target .sr-label{color:var(--yellow)}
+.sr-target .sr-val{color:var(--yellow)}
+
+/* DISCLAIMER */
+.disclaimer{background:rgba(99,102,241,0.05);border:1px solid rgba(99,102,241,0.15);border-radius:10px;padding:14px 18px;font-size:12px;color:var(--sub);line-height:1.7;margin-top:24px}
+
+/* ERROR */
+.error-box{background:#2d0505;border:1px solid #7f1d1d;border-radius:12px;padding:20px;color:#fca5a5;font-size:14px;text-align:center}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:80px 20px}
+.empty-icon{font-size:56px;margin-bottom:16px}
+.empty-title{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;margin-bottom:8px;color:#1e3050}
+.empty-sub{color:var(--sub);font-size:14px}
+
+/* FOOTER */
+footer{background:var(--surface);border-top:1px solid var(--border);padding:16px 24px;text-align:center;font-size:11px;color:var(--dim)}
+
+@media(max-width:600px){
+  .grid-2,.grid-3,.pros-cons{grid-template-columns:1fr}
+  .signal-banner{flex-direction:column;text-align:center}
+  .signal-confidence{margin-left:0}
+  .sr-row{flex-direction:column}
+  .stock-header{flex-direction:column;align-items:flex-start}
+  .stock-price-wrap{text-align:left}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-icon">🔬</div>
+  <div>
+    <div class="logo-text">Stock<span>Lens</span></div>
+    <div class="logo-sub">Deep dive research for Indian stocks</div>
+  </div>
+  <div class="edu-badge">📚 Educational Only</div>
+</header>
+
+<div class="search-wrap">
+  <div class="search-label">// Search any Indian stock</div>
+  <div class="search-row">
+    <input class="search-input" id="searchInput" placeholder="Type stock name or ticker… e.g. Reliance, TCS, Infosys" autocomplete="off"/>
+    <button class="search-btn" id="searchBtn" onclick="searchStock()">
+      <span>🔍</span> Analyze
+    </button>
+  </div>
+  <div class="quick-tags">
+    <span class="quick-tag" onclick="quickSearch('Reliance Industries')">RELIANCE</span>
+    <span class="quick-tag" onclick="quickSearch('TCS')">TCS</span>
+    <span class="quick-tag" onclick="quickSearch('HDFC Bank')">HDFCBANK</span>
+    <span class="quick-tag" onclick="quickSearch('Infosys')">INFY</span>
+    <span class="quick-tag" onclick="quickSearch('ICICI Bank')">ICICIBANK</span>
+    <span class="quick-tag" onclick="quickSearch('Tata Motors')">TATAMOTORS</span>
+    <span class="quick-tag" onclick="quickSearch('Wipro')">WIPRO</span>
+    <span class="quick-tag" onclick="quickSearch('NTPC')">NTPC</span>
+    <span class="quick-tag" onclick="quickSearch('Bajaj Finance')">BAJFINANCE</span>
+  </div>
+</div>
+
+<div class="main" id="main">
+  <div class="empty" id="emptyState">
+    <div class="empty-icon">🔬</div>
+    <div class="empty-title">Search any Indian stock above</div>
+    <div class="empty-sub">Get full analysis — signal, fundamentals, technicals, pros & cons, and a plain-English summary</div>
+  </div>
+</div>
+
+<footer>⚠ StockLens is for educational purposes only · Not SEBI registered · Not financial advice · Always consult a registered advisor before investing</footer>
+
+<script>
+const SYSTEM = `You are an expert Indian stock market analyst. When given a stock name or ticker, provide a comprehensive analysis and return ONLY a raw JSON object. No markdown, no explanation, no backticks. Start with { end with }.
+
+Return this EXACT structure:
+{
+  "ticker": "RELIANCE",
+  "companyName": "Reliance Industries Ltd",
+  "sector": "Energy & Petrochemicals",
+  "marketCap": "₹19.2 Lakh Cr",
+  "price": "₹2,845",
+  "weekHigh52": "₹3,217",
+  "weekLow52": "₹2,220",
+  "change": "+2.4%",
+  "changePositive": true,
+  "pe": "28.4",
+  "pb": "2.1",
+  "eps": "₹96.3",
+  "dividendYield": "0.4%",
+  "debtToEquity": "0.38",
+  "roe": "9.8%",
+  "revenueGrowth": "+8.2% YoY",
+  "profitGrowth": "+12.1% YoY",
+  "signal": "BUY",
+  "confidence": 74,
+  "signalTagline": "Strong fundamentals with positive momentum. Good for long-term accumulation.",
+  "rsi": 61,
+  "rsiSignal": "Bullish",
+  "macd": "Bullish Crossover",
+  "macdSignal": "Bullish",
+  "movingAvg50": "Above",
+  "movingAvg200": "Above",
+  "movingAvgSignal": "Bullish",
+  "volumeTrend": "Above Average",
+  "volumeSignal": "Bullish",
+  "bollingerBands": "Mid Range",
+  "bollingerSignal": "Neutral",
+  "support1": "₹2,780",
+  "support2": "₹2,650",
+  "resistance1": "₹2,920",
+  "resistance2": "₹3,100",
+  "target12m": "₹3,200",
+  "stopLoss": "₹2,620",
+  "pros": ["Strong cash flow from Jio and Retail segments","Market leader in telecom and retail","Consistent revenue growth over 5 years","Promoter holding is high showing confidence","Low debt compared to peers"],
+  "cons": ["High PE compared to sector average","O2C segment facing margin pressure","Stock has been range-bound for 6 months","FII selling in recent quarters","Regulatory risk in telecom sector"],
+  "summary": "Write 3-4 sentences plain English summary here about the company, its business, and why the signal is BUY/SELL/HOLD.",
+  "aboutCompany": "Write 2-3 sentences about what the company does and its main business segments."
+}
+
+signal must be exactly "BUY", "SELL", or "HOLD"
+confidence: 0-100 integer
+All signals (rsiSignal, macdSignal etc) must be exactly "Bullish", "Bearish", or "Neutral"
+movingAvg50 and movingAvg200 must be "Above" or "Below"
+RAW JSON ONLY. Start with {`;
+
+async function analyzeStock(name) {
+  const main = document.getElementById('main');
+  document.getElementById('emptyState') && (document.getElementById('emptyState').style.display = 'none');
+
+  main.innerHTML = `
+    <div class="loading">
+      <div class="loading-stock">${name.toUpperCase()}</div>
+      <div class="loading-spinner">
+        <div class="spin-dot"></div><div class="spin-dot"></div><div class="spin-dot"></div>
+      </div>
+      <div class="loading-text">Analyzing fundamentals, technicals & signals…</div>
+    </div>`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1500,
+        system: SYSTEM,
+        messages: [{ role: 'user', content: `Analyze this Indian stock for me: ${name}. Return complete JSON analysis.` }]
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const raw = (data.content || []).map(b => b.text || '').join('');
+    const s = raw.indexOf('{'), e = raw.lastIndexOf('}');
+    if (s === -1 || e === -1) throw new Error('Could not parse response');
+    const stock = JSON.parse(raw.slice(s, e + 1));
+    renderStock(stock);
+  } catch(err) {
+    main.innerHTML = `<div class="error-box">
+      <div style="font-size:28px;margin-bottom:12px">⚠️</div>
+      <div style="font-weight:700;margin-bottom:8px">Could not analyze "${name}"</div>
+      <div style="font-size:13px;opacity:0.8">${err.message.includes('fetch') || err.message.includes('network') ? 'Network blocked in this environment. Please host this on your own website or open on desktop claude.ai.' : err.message}</div>
+    </div>`;
+  }
+}
+
+function renderStock(s) {
+  const signalClass = s.signal === 'BUY' ? 'buy-banner' : s.signal === 'SELL' ? 'sell-banner' : 'hold-banner';
+  const signalIcon = s.signal === 'BUY' ? '🚀' : s.signal === 'SELL' ? '🔴' : '⏸️';
+  const signalEmoji = s.signal === 'BUY' ? '✅' : s.signal === 'SELL' ? '❌' : '🟡';
+
+  const techSignal = (sig) => {
+    const cls = sig === 'Bullish' ? 'sig-bullish' : sig === 'Bearish' ? 'sig-bearish' : 'sig-neutral';
+    return `<span class="tech-signal ${cls}">${sig}</span>`;
+  };
+
+  const maSignal = (val) => {
+    const cls = val === 'Above' ? 'sig-bullish' : 'sig-bearish';
+    return `<span class="tech-signal ${cls}">${val}</span>`;
+  };
+
+  document.getElementById('main').innerHTML = `
+
+    <!-- SIGNAL BANNER -->
+    <div class="signal-banner ${signalClass}">
+      <div class="signal-icon-big">${signalIcon}</div>
+      <div class="signal-text-wrap">
+        <div class="signal-action">${signalEmoji} ${s.signal} — ${s.companyName}</div>
+        <div class="signal-tagline">${s.signalTagline}</div>
+      </div>
+      <div class="signal-confidence">
+        <div class="conf-ring">
+          <div class="conf-pct">${s.confidence}%</div>
+          <div class="conf-label">Confidence</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STOCK HEADER -->
+    <div class="stock-header">
+      <div class="stock-name-wrap">
+        <div class="ticker">${s.ticker}</div>
+        <div class="full-name">${s.companyName}</div>
+        <div class="sector-tag">${s.sector}</div>
+      </div>
+      <div class="stock-price-wrap">
+        <div class="price-val">${s.price}</div>
+        <div class="price-change ${s.changePositive ? 'price-up' : 'price-down'}">${s.change} today</div>
+      </div>
+    </div>
+
+    <!-- SUPPORT / RESISTANCE / TARGET -->
+    <div class="sr-row">
+      <div class="sr-card sr-support">
+        <div class="sr-label">🛡 Support 1</div>
+        <div class="sr-val">${s.support1}</div>
+      </div>
+      <div class="sr-card sr-support" style="opacity:0.75">
+        <div class="sr-label">🛡 Support 2</div>
+        <div class="sr-val">${s.support2}</div>
+      </div>
+      <div class="sr-card sr-target">
+        <div class="sr-label">🎯 12M Target</div>
+        <div class="sr-val">${s.target12m}</div>
+      </div>
+      <div class="sr-card sr-resistance" style="opacity:0.75">
+        <div class="sr-label">🚧 Resistance 1</div>
+        <div class="sr-val">${s.resistance1}</div>
+      </div>
+      <div class="sr-card sr-resistance">
+        <div class="sr-label">🚧 Resistance 2</div>
+        <div class="sr-val">${s.resistance2}</div>
+      </div>
+    </div>
+
+    <!-- FUNDAMENTALS + TECHNICALS -->
+    <div class="grid-2">
+      <div class="info-card">
+        <div class="info-card-title">📊 Key Fundamentals</div>
+        <div class="metric-row"><span class="metric-key">Market Cap</span><span class="metric-val">${s.marketCap}</span></div>
+        <div class="metric-row"><span class="metric-key">P/E Ratio</span><span class="metric-val">${s.pe}</span></div>
+        <div class="metric-row"><span class="metric-key">P/B Ratio</span><span class="metric-val">${s.pb}</span></div>
+        <div class="metric-row"><span class="metric-key">EPS</span><span class="metric-val">${s.eps}</span></div>
+        <div class="metric-row"><span class="metric-key">Dividend Yield</span><span class="metric-val">${s.dividendYield}</span></div>
+        <div class="metric-row"><span class="metric-key">Debt to Equity</span><span class="metric-val">${s.debtToEquity}</span></div>
+        <div class="metric-row"><span class="metric-key">ROE</span><span class="metric-val">${s.roe}</span></div>
+        <div class="metric-row"><span class="metric-key">Revenue Growth</span><span class="metric-val">${s.revenueGrowth}</span></div>
+        <div class="metric-row"><span class="metric-key">Profit Growth</span><span class="metric-val">${s.profitGrowth}</span></div>
+        <div class="metric-row"><span class="metric-key">52W High</span><span class="metric-val">${s.weekHigh52}</span></div>
+        <div class="metric-row"><span class="metric-key">52W Low</span><span class="metric-val">${s.weekLow52}</span></div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-title">📈 Technical Indicators</div>
+        <div class="tech-item"><span class="tech-name">RSI (${s.rsi})</span>${techSignal(s.rsiSignal)}</div>
+        <div class="tech-item"><span class="tech-name">MACD — ${s.macd}</span>${techSignal(s.macdSignal)}</div>
+        <div class="tech-item"><span class="tech-name">50-Day MA</span>${maSignal(s.movingAvg50)}</div>
+        <div class="tech-item"><span class="tech-name">200-Day MA</span>${maSignal(s.movingAvg200)}</div>
+        <div class="tech-item"><span class="tech-name">Volume Trend</span>${techSignal(s.volumeSignal)}</div>
+        <div class="tech-item"><span class="tech-name">Bollinger Bands</span>${techSignal(s.bollingerSignal)}</div>
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+          <div class="info-card-title" style="margin-bottom:10px">🛑 Stop Loss Level</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--red)">${s.stopLoss}</div>
+          <div style="font-size:12px;color:var(--sub);margin-top:4px">Exit point if trade goes wrong</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABOUT -->
+    <div class="summary-card">
+      <div class="summary-title">🏢 About the Company</div>
+      <div class="summary-text">${s.aboutCompany}</div>
+    </div>
+
+    <!-- PROS CONS -->
+    <div class="pros-cons">
+      <div class="pros-card">
+        <div class="pc-title">✅ Why Buy (Positives)</div>
+        ${(s.pros || []).map(p => `<div class="pc-item"><span class="pc-dot">●</span>${p}</div>`).join('')}
+      </div>
+      <div class="cons-card">
+        <div class="pc-title">❌ Why Be Careful (Risks)</div>
+        ${(s.cons || []).map(c => `<div class="pc-item"><span class="pc-dot">●</span>${c}</div>`).join('')}
+      </div>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="summary-card">
+      <div class="summary-title">🧠 Analyst Summary</div>
+      <div class="summary-text">${s.summary}</div>
+    </div>
+
+    <!-- DISCLAIMER -->
+    <div class="disclaimer">
+      ⚠ <strong>Educational Disclaimer:</strong> This analysis is generated by AI for learning purposes only. It is NOT SEBI-registered investment advice. The BUY/SELL/HOLD signal is for educational understanding of stock analysis concepts only. Do NOT make real trading decisions based on this. Always consult a SEBI-registered financial advisor before investing. Trading in stocks involves significant risk of financial loss.
+    </div>
+
+    <button onclick="resetSearch()" style="width:100%;margin-top:20px;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--sub);cursor:pointer;font-size:14px;font-family:'Inter',sans-serif;transition:all 0.2s" onmouseover="this.style.borderColor='#4b6080'" onmouseout="this.style.borderColor='var(--border)'">
+      ← Search Another Stock
+    </button>
+  `;
+}
+
+function searchStock() {
+  const val = document.getElementById('searchInput').value.trim();
+  if (!val) return;
+  analyzeStock(val);
+}
+
+function quickSearch(name) {
+  document.getElementById('searchInput').value = name;
+  analyzeStock(name);
+}
+
+function resetSearch() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('main').innerHTML = `
+    <div class="empty" id="emptyState">
+      <div class="empty-icon">🔬</div>
+      <div class="empty-title">Search any Indian stock above</div>
+      <div class="empty-sub">Get full analysis — signal, fundamentals, technicals, pros & cons, and a plain-English summary</div>
+    </div>`;
+}
+
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') searchStock();
+});
+</script>
+</body>
+</html>
