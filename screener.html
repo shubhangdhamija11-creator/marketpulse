@@ -156,50 +156,39 @@ Object.keys(WATCHLISTS).forEach(name => {
 });
 
 async function fetchChunk(tickers) {
+  // Paste your real Gemini API Key inside these quotes
+  const apiKey = "AIzaSyYour_Actual_Google_Gemini_Key_Here";
 
-  const res = await fetch("/api/analyze", {
+  // Gemini's API allows direct browser calls (CORS-enabled) — no proxy needed
+  const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+  const res = await fetch(targetUrl, {
     method: "POST",
-    headers: {
+    headers: { 
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      tickers,
-      promptText: PROMPT
+      contents: [{
+        parts: [{ text: `${PROMPT}\n\nAnalyze these specific tickers now: ${tickers.join(", ")}` }]
+      }],
+      generationConfig: {
+        temperature: 0.2
+      }
     })
   });
-
+  
   const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data.error || "Server Error");
-  }
-
-  if (data.error) {
-    throw new Error(data.error);
-  }
-
-  let raw = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-
-  if (!raw) {
-    throw new Error("Gemini returned empty response");
-  }
-
+  if (data.error) throw new Error(data.error.message);
+  
+  let raw = data.candidates[0].content.parts[0].text.trim();
+  
   if (raw.startsWith("```")) {
-    raw = raw
-      .replace(/^```json/, "")
-      .replace(/^```/, "")
-      .replace(/```$/, "")
-      .trim();
+    raw = raw.replace(/^```json/, "").replace(/^```/, "").replace(/```$/, "").trim();
   }
-
-  const start = raw.indexOf("[");
-  const end = raw.lastIndexOf("]");
-
-  if (start === -1 || end === -1) {
-    throw new Error("Invalid JSON returned by Gemini");
-  }
-
-  return JSON.parse(raw.slice(start, end + 1));
+  
+  const s = raw.indexOf("["), e = raw.lastIndexOf("]");
+  if (s === -1 || e === -1) throw new Error("Invalid format returned from model structure.");
+  return JSON.parse(raw.slice(s, e + 1));
 }
 
 async function runScreen(tickers) {
