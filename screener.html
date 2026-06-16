@@ -178,23 +178,11 @@ async function fetchChunk(tickers) {
       }
     })
   });
-  
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  
-  let raw = data.candidates[0].content.parts[0].text.trim();
-  
-  if (raw.startsWith("```")) {
-    raw = raw.replace(/^```json/, "").replace(/^```/, "").replace(/```$/, "").trim();
-  }
-  
-  const s = raw.indexOf("["), e = raw.lastIndexOf("]");
-  if (s === -1 || e === -1) throw new Error("Invalid format returned from model structure.");
-  return JSON.parse(raw.slice(s, e + 1));
-}
-
+  const res = await fetch(proxyUrl + targetUrl, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { 
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify({
       contents: [{
         parts: [{ text: `${PROMPT}\n\nAnalyze these specific tickers now: ${tickers.join(", ")}` }]
@@ -205,6 +193,20 @@ async function fetchChunk(tickers) {
     })
   });
   
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  
+  let raw = data.candidates[0].content.parts[0].text.trim();
+  
+  if (raw.startsWith("```")) {
+    raw = raw.replace(/^
+```json/, "").replace(/^```/, "").replace(/```$/, "").trim();
+  }
+  
+  const s = raw.indexOf("["), e = raw.lastIndexOf("]");
+  if (s === -1 || e === -1) throw new Error("Invalid format returned from model structure.");
+  return JSON.parse(raw.slice(s, e + 1));
+}
   const data = await res.json();
   if (data.error) throw new Error(data.error.message);
   
