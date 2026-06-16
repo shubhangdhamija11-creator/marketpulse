@@ -139,7 +139,7 @@ Each stock object in the array must look exactly like this:
 
 Rules:
 1. "signal" must be exactly one of: "Bull Cartel", "Bullish", "Neutral", "Bearish", "Bear Cartel".
-2. "rating" must be an integer from 1-10 (10=strongest bull, 1=strongest bear).
+2. "rating" must be an integer from 1-10.
 3. Do not include any text before or after the JSON bracket array.`;
 
 let allStocks = [];
@@ -147,7 +147,6 @@ let activeFilter = "All";
 let activeWl = "";
 let isLoading = false;
 
-// Build watchlist buttons
 const wlRow = document.getElementById("watchlistRow");
 Object.keys(WATCHLISTS).forEach(name => {
   const b = document.createElement("button");
@@ -157,10 +156,10 @@ Object.keys(WATCHLISTS).forEach(name => {
 });
 
 async function fetchChunk(tickers) {
-  // 1. Paste your real Gemini API Key inside these quotes
+  // 1. Paste your real Gemini API Key inside these quotes[cite: 1]
   const apiKey = "AIzaSyYour_Actual_Google_Gemini_Key_Here";
 
-  // 2. We route the URL through the proxy to bypass the CORS block completely
+  // 2. Proxy setup to unblock client browser CORS requests safely[cite: 1]
   const proxyUrl = "https://cors-anywhere.herokuapp.com/";
   const targetUrl = `https://generatelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
@@ -178,41 +177,12 @@ async function fetchChunk(tickers) {
       }
     })
   });
-  const res = await fetch(proxyUrl + targetUrl, {
-    method: "POST",
-    headers: { 
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      contents: [{
-        parts: [{ text: `${PROMPT}\n\nAnalyze these specific tickers now: ${tickers.join(", ")}` }]
-      }],
-      generationConfig: {
-        temperature: 0.2
-      }
-    })
-  });
   
   const data = await res.json();
   if (data.error) throw new Error(data.error.message);
   
   let raw = data.candidates[0].content.parts[0].text.trim();
   
-  if (raw.startsWith("```")) {
-    raw = raw.replace(/^
-```json/, "").replace(/^```/, "").replace(/```$/, "").trim();
-  }
-  
-  const s = raw.indexOf("["), e = raw.lastIndexOf("]");
-  if (s === -1 || e === -1) throw new Error("Invalid format returned from model structure.");
-  return JSON.parse(raw.slice(s, e + 1));
-}
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  
-  let raw = data.candidates[0].content.parts[0].text.trim();
-  
-  // Clean up codeblock markers if Gemini accidentally returns them
   if (raw.startsWith("```")) {
     raw = raw.replace(/^```json/, "").replace(/^```/, "").replace(/```$/, "").trim();
   }
@@ -234,7 +204,6 @@ async function runScreen(tickers) {
   document.getElementById("screenBtn").disabled = true;
   document.querySelectorAll(".wl-btn").forEach(b => b.disabled = true);
 
-  // We chunk into groups of 4 stocks to stay well within the Gemini Free Tier's Per-Minute constraints
   const chunks = [];
   for (let i = 0; i < tickers.length; i += 4) chunks.push(tickers.slice(i, i+4));
 
@@ -246,7 +215,6 @@ async function runScreen(tickers) {
       allStocks.push(...res);
       renderResults();
       
-      // Short 1 second delay to protect against hitting the Free Tier RPM rate limit limits
       if (chunks.length > 1 && i < chunks.length - 1) {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
