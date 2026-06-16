@@ -158,7 +158,7 @@ Object.keys(WATCHLISTS).forEach(name => {
 
 async function fetchChunk(tickers) {
   // Grab your key securely directly from your Vercel configurations
-  const apiKey = window.NEXT_PUBLIC_GEMINI_API_KEY || "%%NEXT_PUBLIC_GEMINI_API_KEY%%";
+  const apiKey = "AIzaSyYourActualKeyGoesHere";
 
   const res = await fetch(`https://generatelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
     method: "POST",
