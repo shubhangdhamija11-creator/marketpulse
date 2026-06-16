@@ -156,25 +156,58 @@ Object.keys(WATCHLISTS).forEach(name => {
 });
 
 async function fetchChunk(tickers) {
-  // 1. Paste your real Gemini API Key inside these quotes[cite: 1]
-  const apiKey = "AQ.Ab8RN6Iw0_ymm6DSfTlm1I05PZWcIZ2BYMDerqv7AtH3coFfgA";
 
-  // 2. Proxy setup to unblock client browser CORS requests safely[cite: 1]
-  const proxyUrl = "https://cors-anywhere.herokuapp.com/";
-  const targetUrl = `https://generatelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-  const res = await fetch(proxyUrl + targetUrl, {
+  const res = await fetch("/api/analyze", {
     method: "POST",
-    headers: { 
+    headers: {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      contents: [{
-        parts: [{ text: `${PROMPT}\n\nAnalyze these specific tickers now: ${tickers.join(", ")}` }]
-      }],
-      generationConfig: {
-        temperature: 0.2
-      }
+      tickers,
+      promptText: PROMPT
+    })
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.error || "Server Error");
+  }
+
+  if (data.error) {
+    throw new Error(data.error);
+  }
+
+  let raw = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+
+  if (!raw) {
+    throw new Error("Gemini returned empty response");
+  }
+
+  if (raw.startsWith("```")) {
+    raw = raw
+      .replace(/^```json/, "")
+      .replace(/^```/, "")
+      .replace(/```$/, "")
+      .trim();
+  }
+
+  const start = raw.indexOf("[");
+  const end = raw.lastIndexOf("]");
+
+  if (start === -1 || end === -1) {
+    throw new Error("Invalid JSON returned by Gemini");
+  }
+
+  return JSON.parse(raw.slice(start, end + 1));
+}
+});
+
+const data = await res.json();
+
+if (data.error) {
+  throw new Error(data.error);
+}
     })
   });
   
