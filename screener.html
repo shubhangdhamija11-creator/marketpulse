@@ -132,14 +132,15 @@ const SIGNAL_CFG = {
 };
 const ORDER = ["Bull Cartel","Bullish","Neutral","Bearish","Bear Cartel"];
 
-const PROMPT = `You are an Indian stock market analyst. Analyze the given NSE/BSE stocks and return ONLY a raw JSON array. No markdown. No explanation. Start with [ end with ].
+const PROMPT = `You are an Indian stock market analyst. Analyze the given NSE/BSE stocks and return ONLY a raw JSON array string. No markdown formatting. No \`\`\`json wrappers. Start directly with [ and end directly with ].
 
-Each object:
+Each stock object in the array must look exactly like this:
 {"ticker":"RELIANCE","companyName":"Reliance Industries Ltd","sector":"Energy","price":"₹2845","change":"+2.4%","changePositive":true,"signal":"Bull Cartel","signalReason":"Short plain-English reason max 15 words","rsi":67,"macd":"Bullish","volume":"High","support":"₹2780","resistance":"₹2920","rating":8}
 
-signal must be exactly one of: "Bull Cartel","Bullish","Neutral","Bearish","Bear Cartel"
-rating 1-10: 10=strongest bull, 1=strongest bear
-RAW JSON ARRAY ONLY. Start with [`;
+Rules:
+1. "signal" must be exactly one of: "Bull Cartel", "Bullish", "Neutral", "Bearish", "Bear Cartel".
+2. "rating" must be an integer from 1-10 (10=strongest bull, 1=strongest bear).
+3. Do not include any text before or after the JSON bracket array.`;
 
 let allStocks = [];
 let activeFilter = "All";
@@ -156,20 +157,34 @@ Object.keys(WATCHLISTS).forEach(name => {
 });
 
 async function fetchChunk(tickers) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  // Grab your key securely directly from your Vercel configurations
+  const apiKey = window.NEXT_PUBLIC_GEMINI_API_KEY || "%%NEXT_PUBLIC_GEMINI_API_KEY%%";
+
+  const res = await fetch(`https://generatelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "claude-sonnet-4-6", max_tokens: 1500,
-      system: PROMPT,
-      messages: [{ role: "user", content: `Analyze: ${tickers.join(", ")}. Return JSON array only.` }]
+      contents: [{
+        parts: [{ text: `${PROMPT}\n\nAnalyze these specific tickers now: ${tickers.join(", ")}` }]
+      }],
+      generationConfig: {
+        temperature: 0.2
+      }
     })
   });
+  
   const data = await res.json();
   if (data.error) throw new Error(data.error.message);
-  const raw = (data.content || []).map(b => b.text || "").join("");
+  
+  let raw = data.candidates[0].content.parts[0].text.trim();
+  
+  // Clean up codeblock markers if Gemini accidentally returns them
+  if (raw.startsWith("```")) {
+    raw = raw.replace(/^```json/, "").replace(/^```/, "").replace(/```$/, "").trim();
+  }
+  
   const s = raw.indexOf("["), e = raw.lastIndexOf("]");
-  if (s === -1 || e === -1) throw new Error("No JSON array in response");
+  if (s === -1 || e === -1) throw new Error("Invalid format returned from model structure.");
   return JSON.parse(raw.slice(s, e + 1));
 }
 
@@ -185,8 +200,9 @@ async function runScreen(tickers) {
   document.getElementById("screenBtn").disabled = true;
   document.querySelectorAll(".wl-btn").forEach(b => b.disabled = true);
 
+  // We chunk into groups of 4 stocks to stay well within the Gemini Free Tier's Per-Minute constraints
   const chunks = [];
-  for (let i = 0; i < tickers.length; i += 5) chunks.push(tickers.slice(i, i+5));
+  for (let i = 0; i < tickers.length; i += 4) chunks.push(tickers.slice(i, i+4));
 
   try {
     for (let i = 0; i < chunks.length; i++) {
@@ -195,10 +211,15 @@ async function runScreen(tickers) {
       const res = await fetchChunk(chunks[i]);
       allStocks.push(...res);
       renderResults();
+      
+      // Short 1 second delay to protect against hitting the Free Tier RPM rate limit limits
+      if (chunks.length > 1 && i < chunks.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
     }
   } catch(e) {
     document.getElementById("errorBox").style.display = "block";
-    document.getElementById("errorBox").textContent = "⚠ " + (e.message.includes("fetch") || e.message.includes("network") ? "Network error — API is blocked in this environment. Please host this website on Vercel/Netlify and use your own Anthropic API key." : e.message);
+    document.getElementById("errorBox").textContent = "⚠ Error processing calculation pipeline: " + e.message;
   }
 
   document.getElementById("loadingBox").style.display = "none";
