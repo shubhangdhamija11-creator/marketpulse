@@ -18,7 +18,6 @@
 }
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;display:flex;flex-direction:column}
 
-/* HEADER */
 header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:14px}
 .logo-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
 .logo-text{font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:18px}
@@ -26,7 +25,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .logo-sub{font-size:11px;color:var(--sub);margin-top:1px}
 .edu-badge{margin-left:auto;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);border-radius:20px;padding:5px 12px;font-size:11px;color:var(--accent2);font-family:'JetBrains Mono',monospace}
 
-/* SEARCH */
 .search-wrap{padding:32px 24px 0;max-width:860px;margin:0 auto;width:100%}
 .search-label{font-size:12px;color:var(--sub);letter-spacing:1px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:10px}
 .search-row{display:flex;gap:10px}
@@ -40,10 +38,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .quick-tag{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:5px 13px;font-size:12px;color:var(--sub);cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all 0.15s}
 .quick-tag:hover{border-color:var(--accent);color:var(--accent2)}
 
-/* MAIN CONTENT */
 .main{flex:1;padding:28px 24px 48px;max-width:860px;margin:0 auto;width:100%}
 
-/* LOADING */
 .loading{text-align:center;padding:80px 0}
 .loading-spinner{display:flex;justify-content:center;gap:8px;margin-bottom:20px}
 .spin-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);animation:sp 1.2s infinite}
@@ -53,7 +49,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .loading-text{color:var(--sub);font-size:14px}
 .loading-stock{color:var(--accent2);font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;margin-bottom:8px}
 
-/* SIGNAL BANNER */
 .signal-banner{border-radius:16px;padding:24px 28px;margin-bottom:20px;border:1px solid;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
 .signal-icon-big{font-size:48px;line-height:1}
 .signal-text-wrap{flex:1}
@@ -79,7 +74,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .hold-banner .conf-ring{border-color:var(--yellow)}
 .hold-banner .conf-pct{color:var(--yellow)}
 
-/* STOCK HEADER */
 .stock-header{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
 .stock-name-wrap .ticker{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:800}
 .stock-name-wrap .full-name{color:var(--sub);font-size:14px;margin-top:2px}
@@ -90,19 +84,15 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .price-up{color:var(--green)}
 .price-down{color:var(--red)}
 
-/* GRID CARDS */
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
-.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
 .info-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
 .info-card-title{font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;font-family:'JetBrains Mono',monospace;margin-bottom:14px}
 
-/* KEY METRICS */
 .metric-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
 .metric-row:last-child{border-bottom:none}
 .metric-key{font-size:13px;color:var(--sub)}
 .metric-val{font-size:13px;font-weight:600;font-family:'JetBrains Mono',monospace}
 
-/* TECHNICALS */
 .tech-item{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}
 .tech-item:last-child{border-bottom:none}
 .tech-name{font-size:13px;color:var(--sub)}
@@ -111,7 +101,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .sig-bearish{background:rgba(239,68,68,0.1);color:var(--red)}
 .sig-neutral{background:rgba(234,179,8,0.1);color:var(--yellow)}
 
-/* PROS CONS */
 .pros-cons{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 .pros-card{background:#031a0a;border:1px solid #16a34a;border-radius:12px;padding:18px 20px}
 .cons-card{background:#1a0505;border:1px solid #b91c1c;border-radius:12px;padding:18px 20px}
@@ -124,14 +113,12 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .pros-card .pc-dot{color:var(--green)}
 .cons-card .pc-dot{color:var(--red)}
 
-/* SUMMARY */
 .summary-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:14px}
 .summary-title{font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;font-family:'JetBrains Mono',monospace;margin-bottom:12px}
 .summary-text{font-size:14px;color:#94a3b8;line-height:1.8}
 
-/* SUPPORT RESISTANCE */
-.sr-row{display:flex;gap:10px;margin-bottom:14px}
-.sr-card{flex:1;border-radius:12px;padding:16px 18px;border:1px solid}
+.sr-row{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.sr-card{flex:1;min-width:140px;border-radius:12px;padding:16px 18px;border:1px solid}
 .sr-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;font-family:'JetBrains Mono',monospace;margin-bottom:6px}
 .sr-val{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700}
 .sr-support{background:#031a0a;border-color:#16a34a}
@@ -144,23 +131,23 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .sr-target .sr-label{color:var(--yellow)}
 .sr-target .sr-val{color:var(--yellow)}
 
-/* DISCLAIMER */
 .disclaimer{background:rgba(99,102,241,0.05);border:1px solid rgba(99,102,241,0.15);border-radius:10px;padding:14px 18px;font-size:12px;color:var(--sub);line-height:1.7;margin-top:24px}
 
-/* ERROR */
 .error-box{background:#2d0505;border:1px solid #7f1d1d;border-radius:12px;padding:20px;color:#fca5a5;font-size:14px;text-align:center}
 
-/* EMPTY STATE */
 .empty{text-align:center;padding:80px 20px}
 .empty-icon{font-size:56px;margin-bottom:16px}
 .empty-title{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;margin-bottom:8px;color:#1e3050}
 .empty-sub{color:var(--sub);font-size:14px}
 
-/* FOOTER */
 footer{background:var(--surface);border-top:1px solid var(--border);padding:16px 24px;text-align:center;font-size:11px;color:var(--dim)}
 
+.setup-banner{background:#1c1500;border:1px solid #854d0e;border-radius:12px;padding:16px 20px;margin:0 24px 0;max-width:812px;margin-left:auto;margin-right:auto;font-size:13px;color:#fde68a;line-height:1.7;margin-top:20px}
+.setup-banner a{color:#fbbf24;text-decoration:underline}
+.setup-banner code{background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px}
+
 @media(max-width:600px){
-  .grid-2,.grid-3,.pros-cons{grid-template-columns:1fr}
+  .grid-2,.pros-cons{grid-template-columns:1fr}
   .signal-banner{flex-direction:column;text-align:center}
   .signal-confidence{margin-left:0}
   .sr-row{flex-direction:column}
@@ -179,6 +166,17 @@ footer{background:var(--surface);border-top:1px solid var(--border);padding:16px
   </div>
   <div class="edu-badge">📚 Educational Only</div>
 </header>
+
+<!-- API KEY SETUP BANNER -->
+<div class="setup-banner" id="setupBanner">
+  ⚙️ <strong>One-time setup:</strong> This tool uses Google Gemini (free). Get your free key at
+  <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com/app/apikey</a>,
+  then paste it below and click Save. You only need to do this once per browser.
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <input id="apiKeyInput" type="password" placeholder="Paste your Gemini API key here" style="flex:1;background:#0a0f1e;border:1px solid #854d0e;border-radius:8px;padding:9px 12px;font-size:13px;color:#fde68a;outline:none;font-family:'JetBrains Mono',monospace"/>
+    <button onclick="saveApiKey()" style="background:#eab308;color:#000;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer">Save Key</button>
+  </div>
+</div>
 
 <div class="search-wrap">
   <div class="search-label">// Search any Indian stock</div>
@@ -265,10 +263,33 @@ All signals (rsiSignal, macdSignal etc) must be exactly "Bullish", "Bearish", or
 movingAvg50 and movingAvg200 must be "Above" or "Below"
 RAW JSON ONLY. Start with {`;
 
-async function analyzeStock(name) {
-  const main = document.getElementById('main');
-  document.getElementById('emptyState') && (document.getElementById('emptyState').style.display = 'none');
+function getApiKey() {
+  return localStorage.getItem('gemini_api_key') || '';
+}
 
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key) { alert('Please paste your API key first'); return; }
+  localStorage.setItem('gemini_api_key', key);
+  document.getElementById('setupBanner').style.display = 'none';
+  alert('✅ API key saved! You can now search stocks.');
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (getApiKey()) {
+    document.getElementById('setupBanner').style.display = 'none';
+  }
+});
+
+async function analyzeStock(name) {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    document.getElementById('setupBanner').style.display = 'block';
+    document.getElementById('setupBanner').scrollIntoView({ behavior: 'smooth' });
+    return;
+  }
+
+  const main = document.getElementById('main');
   main.innerHTML = `
     <div class="loading">
       <div class="loading-stock">${name.toUpperCase()}</div>
@@ -279,28 +300,40 @@ async function analyzeStock(name) {
     </div>`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1500,
-        system: SYSTEM,
-        messages: [{ role: 'user', content: `Analyze this Indian stock for me: ${name}. Return complete JSON analysis.` }]
+        contents: [{
+          parts: [{ text: SYSTEM + `\n\nAnalyze this Indian stock: ${name}. Return complete JSON analysis only.` }]
+        }],
+        generationConfig: { temperature: 0.7, maxOutputTokens: 2000 }
       })
     });
     const data = await res.json();
-    if (data.error) throw new Error(data.error.message);
-    const raw = (data.content || []).map(b => b.text || '').join('');
+
+    if (data.error) throw new Error(data.error.message || 'API error');
+
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    if (!raw) throw new Error('Empty response from API');
+
     const s = raw.indexOf('{'), e = raw.lastIndexOf('}');
     if (s === -1 || e === -1) throw new Error('Could not parse response');
     const stock = JSON.parse(raw.slice(s, e + 1));
     renderStock(stock);
   } catch(err) {
+    let msg = err.message;
+    if (msg.includes('API_KEY_INVALID') || msg.includes('API key not valid')) {
+      msg = 'Invalid API key. Please check your key and save it again.';
+      localStorage.removeItem('gemini_api_key');
+      document.getElementById('setupBanner').style.display = 'block';
+    } else if (msg.includes('fetch') || msg.includes('network')) {
+      msg = 'Network error. Please check your internet connection.';
+    }
     main.innerHTML = `<div class="error-box">
       <div style="font-size:28px;margin-bottom:12px">⚠️</div>
       <div style="font-weight:700;margin-bottom:8px">Could not analyze "${name}"</div>
-      <div style="font-size:13px;opacity:0.8">${err.message.includes('fetch') || err.message.includes('network') ? 'Network blocked in this environment. Please host this on your own website or open on desktop claude.ai.' : err.message}</div>
+      <div style="font-size:13px;opacity:0.8">${msg}</div>
     </div>`;
   }
 }
@@ -321,8 +354,6 @@ function renderStock(s) {
   };
 
   document.getElementById('main').innerHTML = `
-
-    <!-- SIGNAL BANNER -->
     <div class="signal-banner ${signalClass}">
       <div class="signal-icon-big">${signalIcon}</div>
       <div class="signal-text-wrap">
@@ -337,7 +368,6 @@ function renderStock(s) {
       </div>
     </div>
 
-    <!-- STOCK HEADER -->
     <div class="stock-header">
       <div class="stock-name-wrap">
         <div class="ticker">${s.ticker}</div>
@@ -350,7 +380,6 @@ function renderStock(s) {
       </div>
     </div>
 
-    <!-- SUPPORT / RESISTANCE / TARGET -->
     <div class="sr-row">
       <div class="sr-card sr-support">
         <div class="sr-label">🛡 Support 1</div>
@@ -374,7 +403,6 @@ function renderStock(s) {
       </div>
     </div>
 
-    <!-- FUNDAMENTALS + TECHNICALS -->
     <div class="grid-2">
       <div class="info-card">
         <div class="info-card-title">📊 Key Fundamentals</div>
@@ -406,13 +434,11 @@ function renderStock(s) {
       </div>
     </div>
 
-    <!-- ABOUT -->
     <div class="summary-card">
       <div class="summary-title">🏢 About the Company</div>
       <div class="summary-text">${s.aboutCompany}</div>
     </div>
 
-    <!-- PROS CONS -->
     <div class="pros-cons">
       <div class="pros-card">
         <div class="pc-title">✅ Why Buy (Positives)</div>
@@ -424,13 +450,11 @@ function renderStock(s) {
       </div>
     </div>
 
-    <!-- SUMMARY -->
     <div class="summary-card">
       <div class="summary-title">🧠 Analyst Summary</div>
       <div class="summary-text">${s.summary}</div>
     </div>
 
-    <!-- DISCLAIMER -->
     <div class="disclaimer">
       ⚠ <strong>Educational Disclaimer:</strong> This analysis is generated by AI for learning purposes only. It is NOT SEBI-registered investment advice. The BUY/SELL/HOLD signal is for educational understanding of stock analysis concepts only. Do NOT make real trading decisions based on this. Always consult a SEBI-registered financial advisor before investing. Trading in stocks involves significant risk of financial loss.
     </div>
