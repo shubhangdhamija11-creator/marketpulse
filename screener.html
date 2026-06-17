@@ -1,1 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Stock Screener — MarketPulse India</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#04060f;--surface:#080d1a;--card:#0b1120;--border:#131d30;--muted:#1e2d45;--text:#e2e8f0;--sub:#64748b;--accent:#38bdf8;--green:#34d399;--red:#f87171}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
+    nav{background:rgba(4,6,15,0.95);border-bottom:1px solid var(--border);padding:0 5%;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100}
+    .nav-logo{font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:17px;color:var(--text);text-decoration:none}
+    .nav-logo span{color:var(--accent)}
+    .nav-back{color:var(--sub);font-size:13px;text-decoration:none;display:flex;align-items:center;gap:6px}
+    .nav-back:hover{color:var(--text)}
 
+    .page{max-width:1200px;margin:0 auto;padding:32px 5%}
+    .page-title{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;margin-bottom:4px}
+    .page-sub{color:var(--sub);font-size:14px;margin-bottom:28px}
+
+    .watchlist-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+    .wl-btn{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:13px;color:var(--sub);cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s}
+    .wl-btn:hover,.wl-btn.active{background:rgba(56,189,248,0.1);border-color:var(--accent);color:var(--accent)}
+    .wl-btn:disabled{opacity:0.4;cursor:not-allowed}
+
+    .input-row{display:flex;gap:8px;margin-bottom:28px}
+    .ticker-input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--text);outline:none;font-family:'JetBrains Mono',monospace}
+    .ticker-input:focus{border-color:var(--accent)}
+    .screen-btn{background:var(--accent);color:#000;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'Space Grotesk',sans-serif;transition:opacity 0.2s}
+    .screen-btn:disabled{background:var(--muted);color:var(--sub);cursor:not-allowed}
+    .screen-btn:not(:disabled):hover{opacity:0.85}
+
+    .filter-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:24px}
+    .filter-btn{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;color:var(--sub);transition:all 0.15s}
+
+    .loading{text-align:center;padding:60px 0}
+    .dots{display:flex;justify-content:center;gap:8px;margin-bottom:16px}
+    .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);animation:bounce 1.2s infinite}
+    .dot:nth-child(2){animation-delay:0.2s}
+    .dot:nth-child(3){animation-delay:0.4s}
+    @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-8px)}}
+    .loading-text{color:var(--sub);font-size:13px}
+
+    .group-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;margin-top:32px}
+    .group-icon{font-size:22px}
+    .group-name{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:800;letter-spacing:0.5px}
+    .group-count{color:var(--sub);font-size:12px}
+    .group-line{flex:1;height:1px}
+
+    .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+
+    .stock-card{border-radius:12px;padding:16px;border:1px solid;transition:transform 0.15s}
+    .stock-card:hover{transform:translateY(-2px)}
+    .card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+    .card-ticker{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:800}
+    .card-company{font-size:11px;color:var(--sub);margin-top:2px}
+    .card-sector{font-size:10px;color:var(--muted);margin-top:1px}
+    .card-price{text-align:right}
+    .card-price-val{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600}
+    .card-change{font-size:13px;font-weight:600;font-family:'JetBrains Mono',monospace}
+    .card-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:0.5px;margin-top:4px}
+    .card-reason{font-size:11px;border-radius:6px;padding:7px 9px;margin-bottom:10px;line-height:1.5}
+    .rating-row{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+    .rating-bar{display:flex;gap:2px}
+    .rating-pip{width:8px;height:8px;border-radius:2px}
+    .rating-label{font-size:11px;color:var(--sub)}
+    .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:8px}
+    .metric{background:rgba(0,0,0,0.3);border-radius:5px;padding:5px 7px}
+    .metric-label{font-size:9px;color:var(--sub);text-transform:uppercase;margin-bottom:1px}
+    .metric-val{font-size:12px;font-weight:600;color:#cbd5e1}
+    .levels{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+    .level{background:rgba(0,0,0,0.3);border-radius:5px;padding:5px 7px}
+    .level-label{font-size:9px;color:var(--sub);text-transform:uppercase;margin-bottom:1px}
+
+    .error-box{background:#2d0505;border:1px solid #7f1d1d;border-radius:10px;padding:16px;color:#fca5a5;font-size:13px;margin-bottom:16px}
+    .empty{text-align:center;padding:80px 0;color:var(--sub)}
+    .empty-icon{font-size:48px;margin-bottom:16px}
+
+    .new-search-btn{width:100%;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:10px;font-size:14px;color:var(--sub);cursor:pointer;margin-top:24px;font-family:'Inter',sans-serif;transition:border-color 0.2s}
+    .new-search-btn:hover{border-color:var(--sub);color:var(--text)}
+
+    footer{text-align:center;padding:32px;border-top:1px solid var(--border);color:var(--muted);font-size:11px;margin-top:48px;line-height:1.7}
+  </style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo">Market<span>Pulse</span></a>
+  <a href="index.html" class="nav-back">← Home</a>
+</nav>
+
+<div class="page">
+  <div class="page-title">📡 Stock Screener</div>
+  <div class="page-sub">Enter NSE tickers or pick a watchlist · AI classifies each stock into Bull Cartel, Bullish, Neutral, Bearish, or Bear Cartel</div>
+
+  <div class="watchlist-row" id="watchlistRow"></div>
+  <div class="input-row">
+    <input class="ticker-input" id="tickerInput" placeholder="RELIANCE, TCS, INFY, SBIN, HDFC..." />
+    <button class="screen-btn" id="screenBtn" onclick="startScreen()">Screen →</button>
+  </div>
+  <div class="filter-row" id="filterRow" style="display:none"></div>
+  <div id="loadingBox" class="loading" style="display:none">
+    <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    <div class="loading-text" id="loadingText">Analyzing stocks…</div>
+    <div id="loadingProgress" style="color:#1e2d45;font-size:11px;margin-top:4px"></div>
+  </div>
+  <div id="errorBox" class="error-box" style="display:none"></div>
+  <div id="results"></div>
+  <div id="emptyState" class="empty">
+    <div class="empty-icon">📡</div>
+    <div style="font-size:16px;font-weight:600;color:#334155;margin-bottom:8px">No stocks screened yet</div>
+    <div style="font-size:13px">Pick a watchlist above or enter NSE tickers to begin</div>
+  </div>
+</div>
+
+<footer>⚠ For educational purposes only · Not SEBI registered · Not financial advice · Always do your own research before investing</footer>
+
+<script>
+const WATCHLISTS = {
+  "Nifty 50 Giants": ["RELIANCE","TCS","HDFCBANK","INFY","ICICIBANK","HINDUNILVR","ITC","SBIN","BHARTIARTL","KOTAKBANK"],
+  "Midcap Movers":   ["LUMAXTECH","NALCO","TECHM","MUTHOOTFIN","APOLLOTYRE","TATAPOWER","JSWSTEEL","NBCC","COFORGE","IGL"],
+  "Banking Pack":    ["HDFCBANK","ICICIBANK","SBIN","AXISBANK","KOTAKBANK","BANDHANBNK","FEDERALBNK","INDUSINDBK"],
+  "IT Sector":       ["TCS","INFY","WIPRO","TECHM","HCLTECH","LTIM","COFORGE","PERSISTENT"],
+};
+
+const SIGNAL_CFG = {
+  "Bull Cartel": {bg:"#052e16",border:"#16a34a",text:"#4ade80",badge:"#14532d",line:"#16a34a",icon:"🐂",label:"BULL CARTEL"},
+  "Bullish":     {bg:"#0c1a10",border:"#22c55e",text:"#86efac",badge:"#166534",line:"#22c55e",icon:"📈",label:"BULLISH"},
+  "Neutral":     {bg:"#1c1917",border:"#78716c",text:"#d6d3d1",badge:"#44403c",line:"#78716c",icon:"⚖️",label:"NEUTRAL"},
+  "Bearish":     {bg:"#1a0a0a",border:"#ef4444",text:"#fca5a5",badge:"#7f1d1d",line:"#ef4444",icon:"📉",label:"BEARISH"},
+  "Bear Cartel": {bg:"#2d0505",border:"#dc2626",text:"#f87171",badge:"#450a0a",line:"#dc2626",icon:"🐻",label:"BEAR CARTEL"},
+};
+const ORDER = ["Bull Cartel","Bullish","Neutral","Bearish","Bear Cartel"];
+
+const PROMPT = `You are an Indian stock market analyst. Analyze the given NSE/BSE stocks and return ONLY a raw JSON array string. No markdown formatting. No \`\`\`json wrappers. Start directly with [ and end directly with ].
+
+Each stock object in the array must look exactly like this:
+{"ticker":"RELIANCE","companyName":"Reliance Industries Ltd","sector":"Energy","price":"₹2845","change":"+2.4%","changePositive":true,"signal":"Bull Cartel","signalReason":"Short plain-English reason max 15 words","rsi":67,"macd":"Bullish","volume":"High","support":"₹2780","resistance":"₹2920","rating":8}
+
+Rules:
+1. "signal" must be exactly one of: "Bull Cartel", "Bullish", "Neutral", "Bearish", "Bear Cartel".
+2. "rating" must be an integer from 1-10.
+3. Do not include any text before or after the JSON bracket array.`;
+
+let allStocks = [];
+let activeFilter = "All";
+let activeWl = "";
+let isLoading = false;
+
+const wlRow = document.getElementById("watchlistRow");
+Object.keys(WATCHLISTS).forEach(name => {
+  const b = document.createElement("button");
+  b.className = "wl-btn"; b.textContent = name; b.id = "wl_" + name;
+  b.onclick = () => handleWatchlist(name);
+  wlRow.appendChild(b);
+});
+
+async function fetchChunk(tickers) {
+  // Paste your real Gemini API Key inside these quotes
+  const apiKey = "AIzaSyYour_Actual_Google_Gemini_Key_Here";
+
+  // Gemini's API allows direct browser calls (CORS-enabled) — no proxy needed
+  const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`;
+
+  const res = await fetch(targetUrl, {
+    method: "POST",
+    headers: { 
+      "Content-Type": "application/json",
+      "x-goog-api-key": apiKey
+    },
+    body: JSON.stringify({
+      contents: [{
+        parts: [{ text: `${PROMPT}\n\nAnalyze these specific tickers now: ${tickers.join(", ")}` }]
+      }],
+      generationConfig: {
+        temperature: 0.2
+      }
+    })
+  });
+  
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  
+  let raw = data.candidates[0].content.parts[0].text.trim();
+  
+  if (raw.startsWith("```")) {
+    raw = raw.replace(/^```json/, "").replace(/^```/, "").replace(/```$/, "").trim();
+  }
+  
+  const s = raw.indexOf("["), e = raw.lastIndexOf("]");
+  if (s === -1 || e === -1) throw new Error("Invalid format returned from model structure.");
+  return JSON.parse(raw.slice(s, e + 1));
+}
+
+async function runScreen(tickers) {
+  isLoading = true;
+  allStocks = [];
+  activeFilter = "All";
+  document.getElementById("loadingBox").style.display = "block";
+  document.getElementById("errorBox").style.display = "none";
+  document.getElementById("results").innerHTML = "";
+  document.getElementById("emptyState").style.display = "none";
+  document.getElementById("filterRow").style.display = "none";
+  document.getElementById("screenBtn").disabled = true;
+  document.querySelectorAll(".wl-btn").forEach(b => b.disabled = true);
+
+  const chunks = [];
+  for (let i = 0; i < tickers.length; i += 4) chunks.push(tickers.slice(i, i+4));
+
+  try {
+    for (let i = 0; i < chunks.length; i++) {
+      document.getElementById("loadingText").textContent = `Analyzing ${chunks[i].join(", ")}…`;
+      document.getElementById("loadingProgress").textContent = `${i+1} of ${chunks.length} groups`;
+      const res = await fetchChunk(chunks[i]);
+      allStocks.push(...res);
+      renderResults();
+      
+      if (chunks.length > 1 && i < chunks.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+  } catch(e) {
+    document.getElementById("errorBox").style.display = "block";
+    document.getElementById("errorBox").textContent = "⚠ Error processing calculation pipeline: " + e.message;
+  }
+
+  document.getElementById("loadingBox").style.display = "none";
+  document.getElementById("screenBtn").disabled = false;
+  document.querySelectorAll(".wl-btn").forEach(b => b.disabled = false);
+  isLoading = false;
+
+  if (allStocks.length === 0 && document.getElementById("errorBox").style.display === "none") {
+    document.getElementById("emptyState").style.display = "block";
+  }
+}
+
+function renderResults() {
+  if (!allStocks.length) return;
+  buildFilters();
+  const filtered = activeFilter === "All" ? allStocks : allStocks.filter(s => s.signal === activeFilter);
+  const grouped = {};
+  ORDER.forEach(sig => { grouped[sig] = filtered.filter(s => s.signal === sig); });
+
+  let html = "";
+  ORDER.forEach(sig => {
+    const stocks = grouped[sig];
+    if (!stocks.length) return;
+    const cfg = SIGNAL_CFG[sig];
+    html += `
+    <div>
+      <div class="group-header">
+        <span class="group-icon">${cfg.icon}</span>
+        <span class="group-name" style="color:${cfg.text}">${cfg.label}</span>
+        <span class="group-count">${stocks.length} stock${stocks.length > 1 ? "s" : ""}</span>
+        <div class="group-line" style="background:${cfg.line};opacity:0.3"></div>
+      </div>
+      <div class="cards-grid">
+        ${stocks.map(s => stockCard(s, cfg)).join("")}
+      </div>
+    </div>`;
+  });
+
+  if (allStocks.length > 0) {
+    html += `<button class="new-search-btn" onclick="resetScreen()">← New Search</button>`;
+  }
+
+  document.getElementById("results").innerHTML = html;
+}
+
+function stockCard(s, cfg) {
+  const ratingColor = s.rating >= 7 ? "#4ade80" : s.rating >= 5 ? "#facc15" : "#f87171";
+  const pips = Array.from({length:10}).map((_,i) =>
+    `<div class="rating-pip" style="background:${i < s.rating ? ratingColor : "#374151"}"></div>`
+  ).join("");
+  return `
+  <div class="stock-card" style="background:${cfg.bg};border-color:${cfg.border}">
+    <div class="card-top">
+      <div>
+        <div class="card-ticker" style="color:${cfg.text}">${s.ticker}</div>
+        <div class="card-company">${s.companyName}</div>
+        <div class="card-sector">${s.sector}</div>
+        <div class="card-badge" style="background:${cfg.badge};color:${cfg.text}">${cfg.icon} ${cfg.label}</div>
+      </div>
+      <div class="card-price">
+        <div class="card-price-val" style="color:${cfg.text}">${s.price}</div>
+        <div class="card-change" style="color:${s.changePositive ? "#4ade80" : "#f87171"}">${s.change}</div>
+      </div>
+    </div>
+    <div class="card-reason" style="background:rgba(0,0,0,0.3);color:${cfg.text}">${s.signalReason}</div>
+    <div class="rating-row">
+      <div class="rating-bar">${pips}</div>
+      <span class="rating-label">${s.rating}/10</span>
+    </div>
+    <div class="metrics">
+      <div class="metric"><div class="metric-label">RSI</div><div class="metric-val">${s.rsi}</div></div>
+      <div class="metric"><div class="metric-label">MACD</div><div class="metric-val">${s.macd}</div></div>
+      <div class="metric"><div class="metric-label">Volume</div><div class="metric-val">${s.volume}</div></div>
+    </div>
+    <div class="levels">
+      <div class="level"><div class="level-label">Support</div><div style="font-size:12px;font-weight:600;color:#4ade80">${s.support}</div></div>
+      <div class="level"><div class="level-label">Resistance</div><div style="font-size:12px;font-weight:600;color:#f87171">${s.resistance}</div></div>
+    </div>
+  </div>`;
+}
+
+function buildFilters() {
+  const row = document.getElementById("filterRow");
+  const counts = {};
+  ORDER.forEach(sig => { counts[sig] = allStocks.filter(s => s.signal === sig).length; });
+
+  let html = `<button class="filter-btn ${activeFilter==="All"?"active":""}" onclick="setFilter('All')" style="${activeFilter==="All"?"background:var(--muted);color:var(--text);border-color:var(--sub)":""}">All (${allStocks.length})</button>`;
+  ORDER.forEach(sig => {
+    if (!counts[sig]) return;
+    const cfg = SIGNAL_CFG[sig];
+    const isActive = activeFilter === sig;
+    html += `<button class="filter-btn" onclick="setFilter('${sig}')" style="background:${isActive ? cfg.badge : "var(--card)"};border-color:${cfg.border};color:${cfg.text};font-weight:${isActive?"700":"400"}">${cfg.icon} ${cfg.label} (${counts[sig]})</button>`;
+  });
+
+  row.innerHTML = html;
+  row.style.display = "flex";
+}
+
+function setFilter(sig) {
+  activeFilter = sig;
+  renderResults();
+}
+
+function resetScreen() {
+  allStocks = [];
+  activeFilter = "All";
+  activeWl = "";
+  document.getElementById("results").innerHTML = "";
+  document.getElementById("filterRow").style.display = "none";
+  document.getElementById("errorBox").style.display = "none";
+  document.getElementById("emptyState").style.display = "block";
+  document.getElementById("tickerInput").value = "";
+  document.querySelectorAll(".wl-btn").forEach(b => { b.classList.remove("active"); });
+}
+
+function handleWatchlist(name) {
+  if (isLoading) return;
+  activeWl = name;
+  document.querySelectorAll(".wl-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("wl_"+name).classList.add("active");
+  document.getElementById("tickerInput").value = WATCHLISTS[name].join(", ");
+  runScreen(WATCHLISTS[name]);
+}
+
+function startScreen() {
+  if (isLoading) return;
+  const val = document.getElementById("tickerInput").value;
+  const tickers = val.toUpperCase().split(/[\s,]+/).filter(Boolean);
+  if (!tickers.length) return;
+  document.querySelectorAll(".wl-btn").forEach(b => b.classList.remove("active"));
+  activeWl = "Custom";
+  runScreen(tickers);
+}
+
+document.getElementById("tickerInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") startScreen();
+});
+</script>
+</body>
+</html>
